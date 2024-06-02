@@ -1,30 +1,19 @@
 import http from 'node:http'
+import { json } from './middlewares/json.js'
 
 const tasks = []
 
-const server = http.createServer(async (req, res) => {
-  const { method, url } = req
+const server = http.createServer(async (request, response) => {
+  const { method, url } = request
 
-  const buffers = []
-
-  for await (const chunk of req) {
-    buffers.push(chunk)
-  }
-
-  try {
-    req.body = JSON.parse(Buffer.concat(buffers).toString())
-  } catch {
-    req.body = null
-  }
+  await json(request, response)
 
   if (method === 'GET' && url === '/tasks') {
-    return res
-      .setHeader('Content-type', 'application/json')
-      .end(JSON.stringify(tasks))
+    return response.end(JSON.stringify(tasks))
   }
 
   if (method === 'POST' && url === '/tasks') {
-    const { title, description } = req.body
+    const { title, description } = request.body
 
     tasks.push({
       id: 1,
@@ -34,9 +23,9 @@ const server = http.createServer(async (req, res) => {
       created_at: new Date(),
       updated_at: new Date()
     })
-    return res.writeHead(201).end()
+    return response.writeHead(201).end()
   }
 
-  return res.writeHead(404).end()
+  return response.writeHead(404).end()
 })
 server.listen(3000)
