@@ -2,8 +2,20 @@ import http from 'node:http'
 
 const tasks = []
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const { method, url } = req
+
+  const buffers = []
+
+  for await (const chunk of req) {
+    buffers.push(chunk)
+  }
+
+  try {
+    req.body = JSON.parse(Buffer.concat(buffers).toString())
+  } catch {
+    req.body = null
+  }
 
   if (method === 'GET' && url === '/tasks') {
     return res
@@ -12,17 +24,19 @@ const server = http.createServer((req, res) => {
   }
 
   if (method === 'POST' && url === '/tasks') {
+    const { title, description } = req.body
+
     tasks.push({
       id: 1,
-      title: 'Organizar a casa',
-      descritpion: 'Organizar a casa para visitas',
+      title,
+      description,
       completed_at: null,
       created_at: new Date(),
       updated_at: new Date()
     })
-    return res.end('Tarefa criada com sucesso!')
+    return res.writeHead(201).end()
   }
 
-  return res.end('Hello World')
+  return res.writeHead(404).end()
 })
 server.listen(3000)
