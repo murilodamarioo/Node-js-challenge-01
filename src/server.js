@@ -9,10 +9,11 @@ const server = http.createServer(async (request, response) => {
   await json(request, response)
 
   const route = routes.find(routes => {
-    return routes.method === method && routes.path === url
+    return routes.method === method && routes.path.test(url)
   })
 
   if (route) {
+    const routeParams = request.url.match(route.path)
     return route.handler(request, response)
   }
 
