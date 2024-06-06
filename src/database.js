@@ -54,9 +54,6 @@ export class Database {
       const originalRow = this.#database[table][rowIndex]
 
       const updatedRow = { ...originalRow, ...data, created_at: originalRow.created_at }
-      console.log(originalRow)
-      console.log(data)
-      console.log(updatedRow)
       this.#database[table][rowIndex] = updatedRow
 
       this.#persist()
