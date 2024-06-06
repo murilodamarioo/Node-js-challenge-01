@@ -47,5 +47,19 @@ export class Database {
 
   }
 
-  update(table, id, data) {}
+  update(table, id, data) {
+    const rowIndex = this.#database[table].findIndex(row => row.id === id)
+
+    if  (rowIndex > -1) {
+      const originalRow = this.#database[table][rowIndex]
+
+      const updatedRow = { ...originalRow, ...data, created_at: originalRow.created_at }
+      console.log(originalRow)
+      console.log(data)
+      console.log(updatedRow)
+      this.#database[table][rowIndex] = updatedRow
+
+      this.#persist()
+    }
+  }
 }
