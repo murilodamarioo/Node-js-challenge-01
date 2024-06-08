@@ -25,6 +25,14 @@ export const routes = [
     handler: (request, response) => {
       const { title, description } = request.body
 
+      if (!title) {
+        return response.writeHead(400).end(JSON.stringify({ message: 'Title is required' }))
+      }
+
+      if (!description) {
+        return response.writeHead(400).end(JSON.stringify({ message: 'Description is required' }))
+      }
+
       const task = {
         id: randomUUID(),
         title,
@@ -45,6 +53,12 @@ export const routes = [
     handler: (request, response) => {
       const { id } = request.params
 
+      const [task] = database.select('tasks', { id })
+
+      if (!task) {
+        return response.writeHead(404).end()
+      }
+
       database.delete('tasks', id)
 
       return response.writeHead(204).end()
@@ -56,6 +70,16 @@ export const routes = [
     handler: (request, response) => {
       const { id } = request.params
       const { title, description, completed_at } = request.body
+
+      if (!title && !description) {
+        return response.writeHead(400).end(JSON.stringify({ message: 'Title or description is required' }))
+      }
+
+      const [task] = database.select('tasks', { id })
+
+      if (!task) {
+        return response.writeHead(404).end()
+      }
 
       database.update('tasks', id, {
         title,
@@ -69,7 +93,22 @@ export const routes = [
   },
   {
     method: 'PATCH',
-    path: buildRoutePath('tasks/:id'),
-    handler: (request, response) => {}
+    path: buildRoutePath('/tasks/:id/complete'),
+    handler: (request, response) => {
+      const { id } = request.params
+      
+      const [task] = database.select('tasks', { id })
+
+      if (!task) {
+        return response.writeHead(404).end()
+      }
+
+      const isTaskCompleted = !!task.completed_at
+      const completed_at = isTaskCompleted ? null : new Date()
+
+      database.update('tasks', id, { completed_at })
+
+      return response.writeHead(204).end()
+    }
   }
 ]

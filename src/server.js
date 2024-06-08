@@ -13,6 +13,8 @@ const server = http.createServer(async (request, response) => {
     return routes.method === method && routes.path.test(url)
   })
 
+  console.log(routes)
+
   if (route) {
     const routeParams = request.url.match(route.path)
 
